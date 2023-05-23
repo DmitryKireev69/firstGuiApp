@@ -3,21 +3,21 @@ import shelve
 
 
 def load_data():
-    db = shelve.open('players.txt')
-    try:
-        data = db['players']
-        db.close()
-    except KeyError:
-        db['players'] = [
-            [1, 'Леброн Джеймс Джеймсович', 206],
-            [2, 'Стефен Карри Кариевич', 1.88],
-            [3, 'Майкл Джордан Джорджанович', 1.98],
-            [4, 'Дуэйн Уэйд Уайдович', 1.93],
-            [5, 'Рассел Уэстбрук Расолович', 1.91]
-        ]
-        data = db['players']
-        db.close()
-    return data
+    with shelve.open('players.txt') as db:
+        try:
+            data = db['players']
+            db.close()
+        except KeyError:
+            db['players'] = [
+                [1, 'Леброн Джеймс Джеймсович', 206],
+                [2, 'Стефен Карри Кариевич', 1.88],
+                [3, 'Майкл Джордан Джорджанович', 1.98],
+                [4, 'Дуэйн Уэйд Уайдович', 1.93],
+                [5, 'Рассел Уэстбрук Расолович', 1.91]
+            ]
+            data = db['players']
+            db.close()
+        return data
 
 
 batsketball_players = load_data()
@@ -29,37 +29,37 @@ def save_data(data):
     db.close()
 
 
-def add_player(values, index):
-    last_name = values['last_name']
-    first_name = values['first_name']
-    surname = values['surname']
-    height = values['height']
-    player = [index, f'{last_name} {first_name} {surname}', height]
+def add_player(data, number):
+    last_name = data['last_name']
+    first_name = data['first_name']
+    surname = data['surname']
+    height = data['height']
+    player = [number, f'{last_name} {first_name} {surname}', height]
     batsketball_players.append(player)
     window['table'].update(batsketball_players)
     save_data(batsketball_players)
 
 
-def handler_click_on_table(values):
-    if len(values['table']) != 0:
-        el_num = values['table'][0]
+def handler_click_on_table(data):
+    if data['table']:
+        el_num = data['table'][0]
         ell = batsketball_players[el_num]
-        fullName = ell[1].split(' ')
-        window['last_name'].Update(fullName[0])
-        window['first_name'].Update(fullName[1])
-        window['surname'].Update(fullName[2])
+        full_name = ell[1].split(' ')
+        window['last_name'].Update(full_name[0])
+        window['first_name'].Update(full_name[1])
+        window['surname'].Update(full_name[2])
         window['height'].Update(ell[2])
 
 
-def edit_player(values):
-    if len(values['table']) != 0:
-        el_num = values['table'][0]
+def edit_player(data):
+    if data['table']:
+        el_num = data['table'][0]
         ell = batsketball_players[el_num]
         player = list(filter(lambda x: ell[0] in x, batsketball_players))
-        player[0][2] = values['height']
-        last_name = values['last_name']
-        first_name = values['first_name']
-        surname = values['surname']
+        player[0][2] = data['height']
+        last_name = data['last_name']
+        first_name = data['first_name']
+        surname = data['surname']
         player[0][1] = f'{last_name} {first_name} {surname}'
         window['table'].update(batsketball_players)
         save_data(batsketball_players)
