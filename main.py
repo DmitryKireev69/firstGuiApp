@@ -1,40 +1,38 @@
 import PySimpleGUI as sg
 import shelve
 
+DEFAULT_DATA = [
+    [1, 'Леброн Джеймс Джеймсович', 206],
+    [2, 'Стефен Карри Кариевич', 1.88],
+    [3, 'Майкл Джордан Джорджанович', 1.98],
+    [4, 'Дуэйн Уэйд Уайдович', 1.93],
+    [5, 'Рассел Уэстбрук Расолович', 1.91]
+]
+
 
 def load_data():
     with shelve.open('players.txt') as db:
-        try:
-            data = db['players']
-            db.close()
-        except KeyError:
-            db['players'] = [
-                [1, 'Леброн Джеймс Джеймсович', 206],
-                [2, 'Стефен Карри Кариевич', 1.88],
-                [3, 'Майкл Джордан Джорджанович', 1.98],
-                [4, 'Дуэйн Уэйд Уайдович', 1.93],
-                [5, 'Рассел Уэстбрук Расолович', 1.91]
-            ]
-            data = db['players']
-            db.close()
-        return data
+        return db.get('players', DEFAULT_DATA)
 
 
 batsketball_players = load_data()
 
 
 def save_data(data):
-    db = shelve.open('players.txt')
-    db['players'] = data
-    db.close()
+    with shelve.open('players.txt') as db:
+        db['players'] = data
+
+
+def create_player(data, number):
+    return [
+        number,
+        '{last_name} {first_name} {surname}'.format(**data),
+        data['height']
+    ]
 
 
 def add_player(data, number):
-    last_name = data['last_name']
-    first_name = data['first_name']
-    surname = data['surname']
-    height = data['height']
-    player = [number, f'{last_name} {first_name} {surname}', height]
+    player = create_player(data, number)
     batsketball_players.append(player)
     window['table'].update(batsketball_players)
     save_data(batsketball_players)
@@ -57,10 +55,7 @@ def edit_player(data):
         ell = batsketball_players[el_num]
         player = list(filter(lambda x: ell[0] in x, batsketball_players))
         player[0][2] = data['height']
-        last_name = data['last_name']
-        first_name = data['first_name']
-        surname = data['surname']
-        player[0][1] = f'{last_name} {first_name} {surname}'
+        player[0][1] = '{last_name} {first_name} {surname}'.format(**data)
         window['table'].update(batsketball_players)
         save_data(batsketball_players)
 
